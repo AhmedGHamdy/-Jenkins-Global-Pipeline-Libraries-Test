@@ -1,26 +1,14 @@
-pipeline {
-    agent any
-
-    parameters {
-        string(name: 'DEPLOY_NAME', description: 'java-maven-app')
-        string(name: 'REPO_NAME', description: 'ahmedgamalhamdy/java-maven-app:tagname')
-        choice(name: 'STAGE', choices: ['dev', 'test', 'release'], description: 'Select deployment stage')
-    }
-
-    stages {
-        stage('Build and Deploy App') {
-            steps {
-                script {
-                    // Generate version based on build number
-                    def version = "1.${currentBuild.number}"
-
-                    def deployConfig = [
-                        deployName: params.DEPLOY_NAME,
-                        repoName: params.REPO_NAME,
-                        stage: params.STAGE,
-                        version: version, // Use the generated version
-                    ]
-                    buildAndDeploy(deployConfig)
+// myPipeline.groovy
+def call(Map pipelineParams) {
+    pipeline {
+        agent any
+        stages {
+            stage('Build and Deploy') {
+                steps {
+                    echo "Deploy Name: ${pipelineParams.DEPLOY_NAME}"
+                    echo "Repo Name: ${pipelineParams.REPO_NAME}"
+                    echo "Stage: ${pipelineParams.STAGE}"
+                    // Add your build and deploy steps here
                 }
             }
         }
