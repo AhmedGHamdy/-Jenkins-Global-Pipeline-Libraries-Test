@@ -1,38 +1,26 @@
-// my-shared-library/vars/buildAndDeploy.groovy
+pipeline {
+    agent any
 
-def call(Map parameters) {
-    def deployName = parameters.deployName ?: 'DefaultDeployName'
-    def repoName = parameters.repoName ?: 'DefaultRepoName'
+    parameters {
+        string(name: 'DEPLOY_NAME', description: 'java-maven-app')
+        string(name: 'REPO_NAME', description: 'ahmedgamalhamdy/java-maven-app:tagname')
+        choice(name: 'STAGE', choices: ['dev', 'test', 'release'], description: 'Select deployment stage')
+    }
 
-    pipeline {
-        agent any
-        environment {
-            DEPLOY_NAME = deployName
-            REPO_NAME = repoName
-        }
-        stages {
-            stage('Build') {
-                steps {
-                    script {
-                        echo "Building ${DEPLOY_NAME} using repo value: ${REPO_NAME}"
-                        // Add your build steps here
-                    }
-                }
-            }
-            stage('Create Image') {
-                steps {
-                    script {
-                        echo "Creating image for ${DEPLOY_NAME} using repo value: ${REPO_NAME}"
-                        // Add your image creation steps here
-                    }
-                }
-            }
-            stage('Deploy To Build') {
-                steps {
-                    script {
-                        echo "Deploying to ${DEPLOY_NAME} using repo value: ${REPO_NAME}"
-                        // Add your deployment steps here
-                    }
+    stages {
+        stage('Build and Deploy App') {
+            steps {
+                script {
+                    // Generate version based on build number
+                    def version = "1.${currentBuild.number}"
+
+                    def deployConfig = [
+                        deployName: params.DEPLOY_NAME,
+                        repoName: params.REPO_NAME,
+                        stage: params.STAGE,
+                        version: version, // Use the generated version
+                    ]
+                    buildAndDeploy(deployConfig)
                 }
             }
         }
