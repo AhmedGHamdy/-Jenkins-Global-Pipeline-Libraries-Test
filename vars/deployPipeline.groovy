@@ -6,8 +6,8 @@ def call(Map params) {
     pipeline {
         agent any
         environment {
-            deployName = params.deployName
-            repoName = params.repoName
+            deployName = "params.${deployName}"
+            repoName = "params.${repoName}"
         }
         stages {
             stage('Build') {
