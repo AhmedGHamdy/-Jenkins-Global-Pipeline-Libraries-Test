@@ -1,8 +1,5 @@
-def call(Map stageParams) {
+#!/usr/bin/env groovy
 
-    checkout([
-        $class: 'GitSCM',
-        branches: [[name:  stageParams.branch ]],
-        userRemoteConfigs: [[ url: stageParams.url ]]
-    ])
-  }
+def call(String name = 'human') {
+    echo "Hello, ${name}."
+}
