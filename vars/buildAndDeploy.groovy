@@ -1,18 +1,18 @@
 def call(Map parameters) {
     def deployName = parameters.deployName ?: 'DefaultDeployName'
-    def repo = parameters.repo ?: 'DefaultRepo'
+    def repoName = parameters.repoName ?: 'DefaultRepoName'
 
     pipeline {
         agent any
         environment {
-            DEPLOY_NAME = deployName
-            REPO = repo
+            DEPLOY_NAME = "${deployName}"
+            REPO_NAME = "${repoName}"
         }
         stages {
             stage('Build') {
                 steps {
                     script {
-                        echo "Building ${DEPLOY_NAME} using repo value: ${REPO}"
+                        echo "Building ${DEPLOY_NAME} using repo value: ${REPO_NAME}"
                         // Add your build steps here
                     }
                 }
@@ -20,7 +20,7 @@ def call(Map parameters) {
             stage('Create Image') {
                 steps {
                     script {
-                        echo "Creating image for ${DEPLOY_NAME} using repo value: ${REPO}"
+                        echo "Creating image for ${DEPLOY_NAME} using repo value: ${REPO_NAME}"
                         // Add your image creation steps here
                     }
                 }
@@ -28,7 +28,7 @@ def call(Map parameters) {
             stage('Deploy To Build') {
                 steps {
                     script {
-                        echo "Deploying to ${DEPLOY_NAME} using repo value: ${REPO}"
+                        echo "Deploying to ${DEPLOY_NAME} using repo value: ${REPO_NAME}"
                         // Add your deployment steps here
                     }
                 }
