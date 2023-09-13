@@ -1,37 +1,49 @@
-def call(Map parameters) {
-    def deployName = parameters.deployName ?: 'DefaultDeployName'
-    def repoName = parameters.repoName ?: 'DefaultRepoName'
+// vars/buildAndDeploy.groovy
+
+def call(Map pipelineConfig) {
+    def deployName = pipelineConfig.deployName
+    def repoName = pipelineConfig.repoName
+    def stage = pipelineConfig.stage
+    def version = pipelineConfig.version
 
     pipeline {
         agent any
         environment {
-            DEPLOY_NAME = "${deployName}"
-            REPO_NAME = "${repoName}"
+            env.deployName = deployName
+            env.repoName = repoName
         }
         stages {
             stage('Build') {
                 steps {
                     script {
-                        echo "Building ${DEPLOY_NAME} using repo value: ${REPO_NAME}"
-                        // Add your build steps here
+                      sh 'echo "Building"'
                     }
                 }
             }
             stage('Create Image') {
                 steps {
-                    script {
-                        echo "Creating image for ${DEPLOY_NAME} using repo value: ${REPO_NAME}"
-                        // Add your image creation steps here
-                    }
+                    sh 'echo "Create Image"'
                 }
             }
             stage('Deploy To Build') {
                 steps {
                     script {
-                        echo "Deploying to ${DEPLOY_NAME} using repo value: ${REPO_NAME}"
-                        // Add your deployment steps here
+                        if (stage == 'dev') {
+                            sh 'echo "Deploying to dev environment"'
+                        } else if (stage == 'test') {
+                            sh 'echo "Deploying to test environment"'
+                        } else if (stage == 'release') {
+                            sh 'echo "Deploying to release environment"'
+                        } else {
+                            error "Invalid value for stage parameter: '${stage}'"
+                        }
                     }
                 }
+            }
+        }
+        post {
+            success {
+                sh "printenv"
             }
         }
     }
