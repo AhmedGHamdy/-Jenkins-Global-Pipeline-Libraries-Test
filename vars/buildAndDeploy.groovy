@@ -1,39 +1,31 @@
-// vars/buildAndDeploy.groovy
+def call(Map parameters) {
+    def deployName = parameters.deployName
+    def repo = parameters.repo
 
-def call(String deployName, String repoName, String stage, String version) {
     pipeline {
         agent any
         environment {
-            // Use parameters passed to this step
-            env.deployName = deployName
-            env.repoName = repoName
+            DEPLOY_NAME = deployName
+            REPO = repo
         }
         stages {
             stage('Build') {
                 steps {
-                    script {
-                        // Your build logic here
-                    }
+                    echo "Building ${DEPLOY_NAME} using repo value: ${REPO}"
+                    // Add your build steps here
                 }
             }
             stage('Create Image') {
                 steps {
-                    script {
-                        // Your image creation logic here
-                    }
+                    echo "Creating image for ${DEPLOY_NAME} using repo value: ${REPO}"
+                    // Add your image creation steps here
                 }
             }
             stage('Deploy To Build') {
                 steps {
-                    script {
-                        // Your deployment logic here
-                    }
+                    echo "Deploying to ${DEPLOY_NAME} using repo value: ${REPO}"
+                    // Add your deployment steps here
                 }
-            }
-        }
-        post {
-            success {
-                sh "printenv"
             }
         }
     }
