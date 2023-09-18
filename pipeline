@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+    environment {
+        deployName = 'dataset-processing'
+        repoName = 'docker.io/oasissys/dataset-processing'
+    }
+    stages {
+        stage('Build') {
+            steps {
+                 script { 
+                def scmVars =  checkout([$class: 'SubversionSCM', additionalCredentials: [], excludedCommitMessages: '', excludedRegions: '', excludedRevprop: '', excludedUsers: '', filterChangelog: false, ignoreDirPropChanges: false, includedRegions: '', locations: [[cancelProcessOnExternalsFail: true, credentialsId: 'c70bb4e7-7535-4ec7-8a04-712b25ac4057', depthOption: 'infinity', ignoreExternalsOption: true, local: 'dataset-processing', remote: 'http://192.168.55.5:5050/svn/BHCJ_REP/Oasis/EmrApplication/Dataset/trunk/DatasetServices/DatasetProcessing@' + params.version ]], quietOperation: true, workspaceUpdater: [$class: 'UpdateWithRevertUpdater']])
+                env.SVN_REVISION = scmVars.SVN_REVISION
+                env.IMAGE_NAME = params.stage + '_' + env.SVN_REVISION + '.' + env.BUILD_NUMBER
+                sh "cd dataset-processing && ./mvnw clean compile"
+                 }
+            }
+        }
+        stage('Create Image') {
+            steps {
+               sh """cd ./dataset-processing && ./mvnw package jib:build  -Djib.container.jvmFlags="-Doracle.jdbc.timezoneAsRegion=false" -Djib.from.auth.username=oasismini -Djib.from.auth.password=123456789 -Djib.from.image=openjdk:11-jdk-slim -Djib.to.auth.username=oasismini -Djib.to.auth.password=123456789 -Djib.container.jvmFlags="-Duser.timezone=Asia/Riyadh" -Djib.to.image=${env.repoName}:${env.IMAGE_NAME}"""
+            }
+        }
+        stage('Deploy To Build') {
+            steps {
+                       script {
+          if (params.stage == 'dev') {
+              sh 'echo "Deploying to dev environment"'
+            sh """ kubectl --kubeconfig /home/admin/install/kubeconfig/jor-kube.yaml set image deploy/${env.deployName} ${env.deployName}=${env.repoName}:${env.IMAGE_NAME} -n dvlp   """
+          } else if (params.stage == 'test') {
+              sh 'echo "Deploying to test environment"'
+            sh """ kubectl --kubeconfig /home/admin/install/kubeconfig/jed-kube.yaml set image deploy/${env.deployName} ${env.deployName}=${env.repoName}:${env.IMAGE_NAME} -n dhbhp   """
+            // deploy to test environment
+          } else if (params.stage == 'release') {
+            sh 'echo "Deploying to release environment"'
+            sh """ kubectl --kubeconfig /home/admin/install/kubeconfig/jed-kube.yaml set image deploy/${env.deployName} ${env.deployName}=${env.repoName}:${env.IMAGE_NAME} -n release   """
+          } else {
+            error "Invalid value for stage parameter: '${params.stage}'"
+          }
+        }
+            }
+        }
+    }
+	post {
+		success {
+		   sh "printenv"
+		   
+		}
+	}
+}
